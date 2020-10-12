@@ -1,0 +1,18 @@
+// Adaptive's mixins
+@mixin mq-narrow {
+  @media (max-width: $breakpoint-regular - 1) {
+      @content;
+  }
+}
+
+@mixin mq-regular {
+  @media (min-width: $breakpoint-regular) {
+      @content;
+  }
+}
+
+@mixin mq-wide {
+  @media (min-width: $breakpoint-wide) {
+      @content;
+  }
+}

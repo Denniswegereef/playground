@@ -1,0 +1,7 @@
+@function rem($px, $base: $font-base-size) {
+  @return ($px / $base) * 1rem;
+}
+
+@function g($columns, $maxColumns) {
+  @return percentage($columns/$maxColumns);
+}
