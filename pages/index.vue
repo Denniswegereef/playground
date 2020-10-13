@@ -39,7 +39,7 @@ export default {
   padding-bottom: rem(15px);
 
   &:last-of-type {
-    margin: 0;
+    padding: 0;
   }
 }
 </style>

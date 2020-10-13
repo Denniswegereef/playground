@@ -57,6 +57,8 @@ export default {
     /*
      ** You can extend webpack config here
      */
-    extend (config, ctx) {}
+    extend (config, { isDev, isClient }) {
+      if (isDev) config.module.rules.push({ test: /\.(glsl|vs|fs|vert|frag)$/, loader: 'raw-loader', exclude: /(node_modules)/ })
+    }
   }
 }

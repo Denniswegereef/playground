@@ -19,6 +19,7 @@ module.exports = {
       "singleline": "never",
       "multiline": "never"
     }],
-    'vue/no-v-html': 0
+    'vue/no-v-html': 0,
+    'no-console': 'off'
   }
 }
