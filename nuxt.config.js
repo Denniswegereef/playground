@@ -50,6 +50,7 @@ export default {
     // Doc: https://github.com/nuxt-community/dotenv-module
     '@nuxtjs/dotenv'
   ],
+
   /*
    ** Build configuration
    */
@@ -58,7 +59,8 @@ export default {
      ** You can extend webpack config here
      */
     extend (config, { isDev, isClient }) {
-      if (isDev) config.module.rules.push({ test: /\.(glsl|vs|fs|vert|frag)$/, loader: 'raw-loader', exclude: /(node_modules)/ })
+      // config.module.rules.push({ test: /\.(glsl|vs|fs|vert|frag)$/, loader: 'glslify-loader', exclude: /(node_modules)/ })
+      config.module.rules.push({ test: /\.(glsl|vs|fs|vert|frag)$/, loader: 'raw-loader', exclude: /(node_modules)/ })
     }
   }
 }

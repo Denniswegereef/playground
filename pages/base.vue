@@ -9,8 +9,8 @@ import debounce from 'lodash.debounce'
 
 import base from '~/mixins/base.js'
 import Canvas from '~/components/webgl/canvas.vue'
-import fragmentShader from '~/components/webgl//hover-displacement/fragment.glsl'
-import vertexShader from '~/components/webgl//hover-displacement/vertex.glsl'
+import fragmentShader from '~/components/webgl/base/fragment.glsl'
+import vertexShader from '~/components/webgl/base/vertex.glsl'
 
 const THREE = require('three')
 const { gsap } = require('gsap')
@@ -41,6 +41,7 @@ export default {
   },
 
   mounted () {
+    console.log(this.isDevelopment())
     if (this.isDevelopment()) this.enableStats()
 
     this._setupRenderer()
@@ -117,13 +118,13 @@ export default {
     },
 
     _renderScene () {
-      if (this.isDevelopment) this.stats.begin()
-      this.uniforms.u_time.value = this.clock.getElapsedTime()
+      if (this.isDevelopment()) this.stats.begin()
 
+      this.uniforms.u_time.value = this.clock.getElapsedTime()
       this._updateValues()
       this.renderer.render(this.scene, this.camera)
 
-      if (this.isDevelopment) this.stats.end()
+      if (this.isDevelopment()) this.stats.end()
     },
 
     _updateValues () {
