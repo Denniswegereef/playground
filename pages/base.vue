@@ -41,7 +41,6 @@ export default {
   },
 
   mounted () {
-    console.log(this.isDevelopment())
     if (this.isDevelopment()) this.enableStats()
 
     this._setupRenderer()
