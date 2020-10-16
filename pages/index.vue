@@ -1,12 +1,12 @@
 <template>
   <div class="home">
     <ul class="home__list">
-      <li v-for="item in $router.options.routes" :key="item.path" class="home__list-item">
+      <li v-for="item in filteredRoutes" :key="item.path" class="home__list-item">
         <nuxt-link
           :to="item.path"
           :prefetch="false"
           class="button home__button">
-          {{ item.name }}
+          {{ item.name | formatName }}
         </nuxt-link>
       </li>
     </ul>
@@ -15,10 +15,20 @@
 
 <script>
 export default {
+  filters: {
+    formatName (string) {
+      return (string.charAt(0).toUpperCase() + string.slice(1)).replace(/-/g, ' ')
+    }
+  },
+
   data () {
     return {
-      routes: []
+      filteredRoutes: []
     }
+  },
+
+  beforeMount () {
+    this.filteredRoutes = this.$router.options.routes.filter(item => item.name !== 'index')
   }
 }
 </script>
