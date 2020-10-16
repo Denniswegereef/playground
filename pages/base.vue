@@ -41,7 +41,7 @@ export default {
   },
 
   mounted () {
-    if (this.isDevelopment()) this.enableStats()
+    this.enableStats()
 
     this._setupRenderer()
     this._setupCamera()
@@ -51,10 +51,8 @@ export default {
 
     this._createScene()
 
-    if (this.isDevelopment()) {
-      this.enableGUI()
-      this._setupGUI()
-    }
+    this.enableGUI()
+    this._setupGUI()
   },
 
   beforeDestroy () {
@@ -117,13 +115,13 @@ export default {
     },
 
     _renderScene () {
-      if (this.isDevelopment()) this.stats.begin()
+      this.stats.begin()
 
       this.uniforms.u_time.value = this.clock.getElapsedTime()
       this._updateValues()
       this.renderer.render(this.scene, this.camera)
 
-      if (this.isDevelopment()) this.stats.end()
+      this.stats.end()
     },
 
     _updateValues () {

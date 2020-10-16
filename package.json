@@ -27,10 +27,12 @@
     "babel-eslint": "^10.0.1",
     "eslint": "^6.1.0",
     "eslint-plugin-nuxt": ">=0.4.2",
+    "glsl-noise": "0.0.0",
     "glslify-loader": "^2.0.0",
     "node-sass": "^4.14.1",
     "raw-loader": "^4.0.2",
     "sass-loader": "^10.0.3",
-    "stats.js": "^0.17.0"
+    "stats.js": "^0.17.0",
+    "webpack-glsl-loader": "^1.0.1"
   }
 }

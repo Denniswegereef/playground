@@ -199,7 +199,7 @@ export default {
     _updateValues () {},
 
     _updateIntersected () {
-      this.raycaster.setFromCamera(this.mouse, this.camera)
+      this.raycaster.setFromCamera(this.mouse.normalize, this.camera)
 
       const intersects = this.raycaster.intersectObject(this.plane, false)
 
@@ -212,7 +212,7 @@ export default {
           this.uniforms.u_intersect.value.x = intersects[0].uv.x
           this.uniforms.u_intersect.value.y = intersects[0].uv.y
 
-          gsap.to(intersectObject.position, 0.35, { x: this.mouse.x, y: this.mouse.y })
+          gsap.to(intersectObject.position, 0.35, { x: this.mouse.normalize.x, y: this.mouse.normalize.y })
         } else if (this.intersected !== intersectObject) {
           // Start intersecting
           this.intersected = intersectObject
@@ -251,13 +251,7 @@ export default {
       this._setupGUI()
     },
 
-    _updateMousePositions (event) {
-      // normalized device cordinates
-      const { clientX, clientY } = event
-
-      this.mouse.x = (clientX / window.innerWidth) * 2 - 1
-      this.mouse.y = (clientY / window.innerHeight) * 2 - 1
-
+    _updateMouse (event) {
       this._updateIntersected()
     },
 
@@ -273,7 +267,7 @@ export default {
     },
 
     _mouseMoveHandler () {
-      window.addEventListener('mousemove', this._updateMousePositions)
+      window.addEventListener('mousemove', this._updateMouse)
     },
 
     _resizeHandler () {
