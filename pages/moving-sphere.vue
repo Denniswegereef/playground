@@ -5,8 +5,6 @@
 </template>
 
 <script>
-// TODO make the circle scalable
-
 import debounce from 'lodash.debounce'
 
 import base from '~/mixins/base.js'
@@ -63,6 +61,8 @@ export default {
 
     this.enableGUI()
     this._setupGUI()
+
+    console.log(this.window.height / this.window.width)
   },
 
   beforeDestroy () {
@@ -96,6 +96,8 @@ export default {
 
       this.camera.aspect = this.window.width / this.window.height
       this.camera.updateProjectionMatrix()
+
+      // if (this.plane) this.plane.scale.set(this.window.height / this.window.width, 1)
     },
 
     _setUpEventListeners () {
@@ -106,7 +108,7 @@ export default {
 
     // SCENE
     _createPlaneGeometry () {
-      const geometry = new THREE.PlaneBufferGeometry(1, 1, 20, 20)
+      const geometry = new THREE.PlaneBufferGeometry(this.window.height / this.window.width, 1, 20, 20)
 
       const shaderMaterial = new THREE.ShaderMaterial({
         uniforms: this.uniforms,

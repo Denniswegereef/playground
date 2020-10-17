@@ -9,7 +9,7 @@ uniform vec3 u_color_two;
 
 float circle(in vec2 _st, in float _radius){
   vec2 dist = _st-vec2(0.5);
-  return 1.0 - smoothstep(_radius-(_radius * 0.74), _radius + (_radius * -0.242), dot(dist, dist) * 4.232);
+  return 1.0 - smoothstep(_radius-(_radius * 0.874), _radius + (_radius * -0.242), dot(dist, dist) * 4.232);
 }
 
 void main(){
