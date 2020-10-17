@@ -6,7 +6,14 @@ export default {
       gui: null,
       folder: null,
       stats: null,
-      mouse: null
+      mouse: {
+        x: 0.0,
+        y: 0.0,
+        normalize: {
+          x: 0.0,
+          y: 0.0
+        }
+      }
     }
   },
 

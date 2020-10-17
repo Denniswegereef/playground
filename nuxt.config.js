@@ -58,6 +58,9 @@ export default {
     /*
      ** You can extend webpack config here
      */
+    transpile: [
+      'three'
+    ],
     extend (config, { isDev, isClient }) {
       // config.module.rules.push({ test: /\.(glsl|vs|fs|vert|frag)$/, loader: 'glslify-loader', exclude: /(node_modules)/ })
       // config.module.rules.push({ test: /\.(glsl|vs|fs|vert|frag)$/, loader: 'glslify-loader', exclude: /(node_modules)/ })

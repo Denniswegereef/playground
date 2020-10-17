@@ -17,7 +17,7 @@ const { gsap } = require('gsap')
 
 const FOV = 50
 const CAMERA_DISTANCE = 50
-const PLANE_WIDTH_SEGMENTS = 30
+const PLANE_WIDTH_SEGMENTS = 90
 const PLANE_ASPECT_RATIO = 9 / 16
 const TEXTURE_WIDTH = 2126
 const TEXTURE_HEIGHT = 1393
@@ -50,7 +50,7 @@ export default {
         u_intersect: { type: 'v2', value: { x: 0.0, y: 0.0 } },
         u_ratio: { type: 'v2', value: { x: 0.0, y: 0.0 } },
         u_hoverRadius: { type: 'f', value: 0.35 },
-        u_speed: { type: 'f', value: 1.3 },
+        u_speed: { type: 'f', value: 0.6 },
         u_amplitude: { type: 'f', value: 10.0 }
       },
       intersected: null,
