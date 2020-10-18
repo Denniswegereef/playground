@@ -31,6 +31,10 @@ export default {
       camera: null,
       renderer: null,
       gui: null,
+      colors: {
+        one: '#75dddd',
+        two: '#aa3e98'
+      },
       window: {
         height: 0,
         width: 0
@@ -38,8 +42,8 @@ export default {
       uniforms: {
         u_time: { value: 0.0 },
         u_resolution: { value: { x: 0.0, y: 0.0 } },
-        u_color_one: { type: 'vec3', value: new THREE.Color('#75dddd') },
-        u_color_two: { type: 'vec3', value: new THREE.Color('#aa3e98') },
+        u_color_one: { type: 'vec3', value: '' },
+        u_color_two: { type: 'vec3', value: '' },
         u_noise_frequency: { type: 'float', value: 3.5 },
         u_noise_amplitude: { type: 'float', value: 0.15 }
       },
@@ -61,8 +65,6 @@ export default {
 
     this.enableGUI()
     this._setupGUI()
-
-    console.log(this.window.height / this.window.width)
   },
 
   beforeDestroy () {
@@ -97,7 +99,10 @@ export default {
       this.camera.aspect = this.window.width / this.window.height
       this.camera.updateProjectionMatrix()
 
-      // if (this.plane) this.plane.scale.set(this.window.height / this.window.width, 1)
+      if (this.scene.children.length > 0) {
+        this.scene.children.forEach(item => this.scene.remove(item))
+        this._createScene()
+      }
     },
 
     _setUpEventListeners () {
@@ -110,6 +115,9 @@ export default {
     _createPlaneGeometry () {
       const geometry = new THREE.PlaneBufferGeometry(this.window.height / this.window.width, 1, 20, 20)
 
+      this.uniforms.u_color_one.value = new THREE.Color(this.colors.one)
+      this.uniforms.u_color_two.value = new THREE.Color(this.colors.two)
+
       const shaderMaterial = new THREE.ShaderMaterial({
         uniforms: this.uniforms,
         vertexShader,
@@ -121,8 +129,6 @@ export default {
     },
 
     _createScene () {
-      // const planePivot = new THREE.Object3D()
-
       this.plane = this._createPlaneGeometry()
       this.scene.add(this.plane)
 
@@ -154,6 +160,8 @@ export default {
     _setupGUI () {
       this.gui.add(this.uniforms.u_noise_frequency, 'value', 0, 15).name('nFrequency').step(0.05)
       this.gui.add(this.uniforms.u_noise_amplitude, 'value', 0, 1.5).name('nAmplitude').step(0.05)
+      this.gui.addColor(this.colors, 'one').onChange((val) => { this.uniforms.u_color_one.value = new THREE.Color(val) }).name('Color 1')
+      this.gui.addColor(this.colors, 'two').onChange((val) => { this.uniforms.u_color_two.value = new THREE.Color(val) }).name('Color 2')
     },
 
     // HANDLERS
@@ -175,6 +183,7 @@ export default {
 
 <style lang="scss" scoped>
 .container {
+  position: fixed;
   width: 100%;
   height: 100vh;
 
