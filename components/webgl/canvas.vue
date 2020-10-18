@@ -57,7 +57,7 @@ export default {
 
 <style lang="scss" scoped>
 .canvas {
-  position: fixed;
+  position: absolute;
   top: 0;
   left: 0;
 

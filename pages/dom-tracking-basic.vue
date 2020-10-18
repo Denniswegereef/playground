@@ -56,8 +56,7 @@ export default {
       content: [],
       text: TEXT,
       sceneElements: [],
-      uniformsArray: [],
-      test: { name: 'test' }
+      uniformsArray: []
     }
   },
 
@@ -156,6 +155,8 @@ export default {
 
     _renderScene () {
       this.stats.begin()
+
+      this.$refs.canvas.$el.style.transform = `translateY(${window.scrollY}px`
 
       const elapsedTime = this.clock.getElapsedTime()
 
