@@ -66,5 +66,8 @@ export default {
       // config.module.rules.push({ test: /\.(glsl|vs|fs|vert|frag)$/, loader: 'glslify-loader', exclude: /(node_modules)/ })
       config.module.rules.push({ test: /\.glsl$/, use: ['webpack-glsl-loader', 'glslify-loader'], exclude: /(node_modules)/ })
     }
+  },
+  server: {
+    host: '0.0.0.0'
   }
 }

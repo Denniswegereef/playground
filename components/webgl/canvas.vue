@@ -1,5 +1,5 @@
 <template>
-  <canvas ref="canvas" class="canvas" />
+  <canvas ref="canvas" class="canvas" id="canvas" />
 </template>
 
 <script>
@@ -64,6 +64,6 @@ export default {
   width: 100%;
   height: 100vh;
 
-  pointer-events: none;
+  // pointer-events: none;
 }
 </style>

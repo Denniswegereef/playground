@@ -29,6 +29,10 @@ export default {
 
   beforeMount () {
     this.filteredRoutes = this.$router.options.routes.filter(item => item.name !== 'index')
+  },
+
+  mounted () {
+    console.log(this)
   }
 }
 </script>

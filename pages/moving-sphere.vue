@@ -148,6 +148,8 @@ export default {
     },
 
     _updateValues () {
+      if (!this.plane) return
+
       this.plane.position.x = lerp(this.plane.position.x, this.newValueX, 0.05)
       this.plane.position.y = lerp(this.plane.position.y, this.newValueY, 0.05)
     },

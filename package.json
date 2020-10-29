@@ -16,9 +16,11 @@
     "@nuxtjs/style-resources": "^1.0.0",
     "dat.gui": "^0.7.7",
     "gsap": "^3.5.1",
+    "load-bmfont": "^1.4.1",
     "lodash.debounce": "^4.0.8",
-    "nuxt": "^2.0.0",
-    "three": "^0.121.1"
+    "nuxt": "^2.14.7",
+    "three": "^0.121.1",
+    "three-bmfont-text": "^3.0.1"
   },
   "devDependencies": {
     "@nuxtjs/eslint-config": "^2.0.0",

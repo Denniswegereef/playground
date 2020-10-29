@@ -6,15 +6,21 @@
 
 <script>
 import debounce from 'lodash.debounce'
-// import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 
 import base from '~/mixins/base.js'
 import Canvas from '~/components/webgl/canvas.vue'
-import fragmentShader from '~/components/webgl/base/fragment.glsl'
-import vertexShader from '~/components/webgl/base/vertex.glsl'
+import fragmentShader from '~/components/webgl/bmfont/fragment.glsl'
+import vertexShader from '~/components/webgl/bmfont/vertex.glsl'
 
 const THREE = require('three')
 const { gsap } = require('gsap')
+const loadFont = require('load-bmfont')
+const createGeometry = require('~/plugins/three-bmfont-text/index')
+
+const FONT_PATH = {
+  FNT: '/fonts/canela/CanelaText-Regular.fnt',
+  PNG: '/fonts/canela/CanelaText-Regular.ttf'
+}
 
 export default {
   components: {
@@ -47,6 +53,8 @@ export default {
     this._setupRenderer()
     this._setupCamera()
 
+    this._setupFonts()
+
     this._setupScreenDimensions()
     this._setUpEventListeners()
 
@@ -74,6 +82,20 @@ export default {
       this.camera.position.z = 150
     },
 
+    _setupFonts () {
+      console.log(createGeometry, loadFont)
+      console.log(FONT_PATH)
+
+      loadFont(FONT_PATH.FNT, (err, font) => {
+        if (err) return
+        console.log(font)
+        // const geometry = createGeometry({
+        //   font,
+        //   text: 'BMFONT TEST'
+        // })
+      })
+    },
+
     _setupScreenDimensions () {
       this.window.width = window.innerWidth
       this.window.height = window.innerHeight
@@ -81,11 +103,11 @@ export default {
       this.uniforms.u_resolution.value.x = this.window.width
       this.uniforms.u_resolution.value.y = this.window.height
 
-      this.camera.aspect = this.window.width / this.window.height
-      this.camera.updateProjectionMatrix()
-
       this.renderer.setSize(this.window.width, this.window.height)
       this.renderer.setPixelRatio(window.devicePixelRatio)
+
+      this.camera.aspect = this.window.width / this.window.height
+      this.camera.updateProjectionMatrix()
     },
 
     _setUpEventListeners () {
