@@ -1,11 +1,10 @@
 <template>
   <section class="container">
-    <Canvas ref="canvas" />
+    <Canvas ref="canvas" @canvasResizeHandler="_resizeScreenHandler" />
   </section>
 </template>
 
 <script>
-import debounce from 'lodash.debounce'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 
 import base from '~/mixins/base.js'
@@ -51,11 +50,18 @@ export default {
   mounted () {
     this.enableStats()
 
+    this._createScene()
+
     this._setupScreenDimensions()
     this._imageAspectCover()
+
     this._setupCamera()
     this._setupRenderer()
-    this._createScene()
+    this._updateCamera()
+    this._updateRenderer()
+
+    this._setSceneDimensions()
+
     this._setUpEventListeners()
 
     this.enableGUI()
@@ -64,7 +70,6 @@ export default {
 
   beforeDestroy () {
     gsap.ticker.remove(this._renderScene)
-    window.removeEventListener('resize', this.$data.resize)
     document.removeEventListener('visibilitychange', this._changeVisibilityStatus)
   },
 
@@ -72,24 +77,20 @@ export default {
     _setUpEventListeners () {
       this._tickHandler()
       this._visibilitychangeHandler()
-      this._resizeHandler()
     },
 
     /*
     ** SCENE SETUP
     */
+
     _setupRenderer () {
       this.renderer = new THREE.WebGLRenderer({ canvas: this.$refs.canvas.$el })
       this.renderer.setClearColor(RENDERER_COLOR, 1)
-      this.renderer.setSize(this.window.width, this.window.height)
-      this.renderer.setPixelRatio(window.devicePixelRatio)
     },
 
     _setupCamera () {
       this.camera = new THREE.PerspectiveCamera(CAMERA_FOV, this.window.width / this.window.height, CAMERA_NEAR, CAMERA_FAR)
       this.camera.position.set(0, 0, 2)
-      this.camera.aspect = this.window.width / this.window.height
-      this.camera.updateProjectionMatrix()
 
       if (!this.orbitControls) return
       this.controls = new OrbitControls(this.camera, this.$refs.canvas.$el)
@@ -104,12 +105,26 @@ export default {
       this.uniforms.u_resolution.value.y = this.window.height
     },
 
+    _setSceneDimensions () {
+      this.window.width / this.window.height > 1 ? this.plane.scale.x = this.camera.aspect : this.plane.scale.y = 1 / this.camera.aspect
+    },
+
     _imageAspectCover () {
       const { height, width } = this.window
       const checkRatio = height / width > IMAGE_ASPECT
 
       this.uniforms.u_resolution.value.z = checkRatio ? (width / height) * IMAGE_ASPECT : 1
       this.uniforms.u_resolution.value.w = checkRatio ? 1 : (height / width) / IMAGE_ASPECT
+    },
+
+    _updateCamera () {
+      this.camera.aspect = this.window.width / this.window.height
+      this.camera.updateProjectionMatrix()
+    },
+
+    _updateRenderer () {
+      this.renderer.setSize(this.window.width, this.window.height)
+      this.renderer.setPixelRatio(window.devicePixelRatio)
     },
 
     /*
@@ -177,9 +192,14 @@ export default {
       document.addEventListener('visibilitychange', this._changeVisibilityStatus)
     },
 
-    _resizeHandler () {
-      this.$data.resize = debounce(this._setupScreenDimensions.bind(this), 250)
-      window.addEventListener('resize', this.$data.resize)
+    _resizeScreenHandler () {
+      this._setupScreenDimensions()
+
+      this._updateCamera()
+      this._updateRenderer()
+
+      this._imageAspectCover()
+      this._setSceneDimensions()
     }
   }
 }

@@ -22,7 +22,7 @@ export default {
   },
 
   beforeDestroy () {
-    window.removeEventListener('resize', this.$data.setCanvasFunction)
+    window.removeEventListener('resize', this.setCanvasFunction)
   },
 
   methods: {
@@ -44,12 +44,17 @@ export default {
       if (this.drawCanvas.show) this._colorCanvas()
     },
 
+    _canvasResize () {
+      this._setCanvasDimensions()
+      this.$emit('canvasResizeHandler')
+    },
+
     /*
     Handlers
     */
     _resizeHandler () {
-      this.$data.setCanvasFunction = debounce(this._setCanvasDimensions.bind(this), 250)
-      window.addEventListener('resize', this.$data.setCanvasFunction)
+      this.setCanvasFunction = debounce(this._canvasResize.bind(this), 250)
+      window.addEventListener('resize', this.setCanvasFunction)
     }
   }
 }

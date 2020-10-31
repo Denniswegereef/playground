@@ -1,6 +1,7 @@
 <template>
   <section class="range-slider">
     <input
+      ref="rangeSlider"
       v-model="value"
       type="range"
       :min="min"
@@ -14,23 +15,23 @@
 
 <script>
 export default {
-  props: {
-    value: {
-      type: Number,
-      default: () => 0
-    }
-  },
-
   data () {
     return {
+      value: 0.0,
       min: 0,
-      max: 1
+      max: 1,
+      currentValue: 0.0
     }
   },
 
   methods: {
+    changeValueHandler (amount) {
+      this.$refs.rangeSlider.value = amount
+      this.currentValue = amount
+    },
+
     rangeInputHandler () {
-      this.$emit('inputHandler', '')
+      this.$emit('inputHandler', this.value)
     },
 
     rangeChangeHandler () {

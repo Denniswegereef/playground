@@ -1,6 +1,6 @@
 <template>
   <section class="container">
-    <RangeSlider :value="rangeSlider.value" @inputHandler="_rangeInputHandler" @changeHandler="_rangeChangeHandler" />
+    <RangeSlider ref="rangeSlider" @inputHandler="_rangeInputHandler" @changeHandler="_rangeChangeHandler" />
     <Canvas ref="canvas" />
   </section>
 </template>
@@ -24,6 +24,8 @@ const { gsap } = require('gsap')
 const API_URL = `https://www.rijksmuseum.nl/api/en/usersets/222667-monsters?key=${process.env.RIJKS_API_KEY}&format=json&ps=10`
 const CAMERA_POSITION_Z = 6
 const GROUP_TO_LEFT = -1
+
+const IMAGES_AMOUNT = 8
 
 const GRID_POSITIONING = [
   {
@@ -70,6 +72,7 @@ export default {
       rangeSlider: {
         value: 0.0
       },
+      ratios: [],
       slide: {
         speed: 100,
         fullWidth: null
@@ -86,7 +89,7 @@ export default {
     this._setupScreenDimensions()
     this._setUpEventListeners()
 
-    this._createScene()
+    this._loadImages()
 
     this.enableGUI()
     this._setupGUI()
@@ -99,6 +102,22 @@ export default {
   },
 
   methods: {
+    _loadImages () {
+      const images = []
+
+      const manager = new THREE.LoadingManager()
+      const textureLoader = new THREE.TextureLoader(manager)
+
+      manager.onLoad = (a) => {
+        this._createScene(images)
+      }
+
+      for (let i = 0; i < IMAGES_AMOUNT; i++) {
+        const texture = require(`~/assets/images/discover-canvas/${i}.jpg`)
+        const image = textureLoader.load(texture)
+        images.push(image)
+      }
+    },
     // SETUP
     _setupRenderer () {
       this.renderer = new THREE.WebGLRenderer({ canvas: this.$refs.canvas.$el })
@@ -135,26 +154,19 @@ export default {
 
     // SCENE
 
-    _createPlaneGeometry (item) {
+    _createPlaneGeometry (item, index) {
       const uniforms = {
         u_time: { type: 'f', value: 0.0 },
         u_resolution: { type: 'v2', value: { x: 0.0, y: 0.0 } },
         u_tex: { type: 'sampler2D', value: '' }
       }
 
-      const fullWidth = item.image.width
-      const fullHeight = item.image.height
-
-      const ratio = fullHeight / fullWidth
-
-      const textureLoader = new THREE.TextureLoader()
-      const loadedTexture = textureLoader.load(item.image.cdnUrl)
-      uniforms.u_tex.value = loadedTexture
+      uniforms.u_tex.value = item
 
       uniforms.u_resolution.value.x = this.window.width
       uniforms.u_resolution.value.y = this.window.height
 
-      const geometry = new THREE.PlaneBufferGeometry(1, ratio, 1, 1)
+      const geometry = new THREE.PlaneBufferGeometry(1, item.image.height / item.image.width, 1, 1)
 
       const shaderMaterial = new THREE.ShaderMaterial({
         uniforms,
@@ -171,17 +183,15 @@ export default {
       return data.userSet
     },
 
-    async _createScene () {
-      const data = await this._getData()
-      // console.log(data)
-
+    _createScene (items) {
       const planes = []
 
-      for (let i = 0; i < data.setItems.slice(1, 10).length; i++) {
+      for (let i = 0; i < items.length; i++) {
         const position = GRID_POSITIONING[modulo(i, 3)]
 
-        const item = data.setItems[i]
-        const plane = this._createPlaneGeometry(item)
+        const item = items[i]
+
+        const plane = this._createPlaneGeometry(item, i)
 
         plane.position.x = (i * 1.2) + GROUP_TO_LEFT
         plane.position.y = position.y
@@ -197,13 +207,7 @@ export default {
 
       this.slide.fullWidth = this.groupBoudingBox.max.x + GROUP_TO_LEFT
 
-      console.log(this.slide.fullWidth)
-
       this.scene.add(this.group)
-
-      // setTimeout(() => {
-      //   this.camera.position.z = CAMERA_POSITION_Z
-      // }, 1000)
     },
 
     _renderScene () {
@@ -224,20 +228,23 @@ export default {
     },
 
     _controlMouseSlider () {
-      this.rangeSlider.value = Math.abs(this.group.position.x) / (this.groupBoudingBox.max.x + GROUP_TO_LEFT)
-
       if (Math.abs(this.group.position.x) > this.groupBoudingBox.max.x + GROUP_TO_LEFT && this.mouse.normalize.x > 0) return
       if (this.group.position.x > 0 && this.mouse.normalize.x < 0) return
 
       if (this.mouse.normalize.x < -0.3 || this.mouse.normalize.x > 0.3) this.group.position.x = (this.group.position.x - (this.mouse.normalize.x / this.slide.speed))
+
+      this._updateSliderPosition(Math.abs(this.group.position.x) / (this.groupBoudingBox.max.x + GROUP_TO_LEFT))
     },
 
     _checkInViewMeshes () {
       for (let i = 0; i < this.group.children.length; i++) offscreen(this.group.children[i], this.camera) ? this.group.children[i].visible = true : this.group.children[i].visible = false
     },
 
-    _updateMousePositions () {
+    _updateSliderPosition (amount) {
+      this.$refs.rangeSlider.changeValueHandler(amount)
 
+      this.rangeSlider.value = Math.abs(this.group.position.x) / (this.groupBoudingBox.max.x + GROUP_TO_LEFT) * amount
+      this.group.position.x = (this.groupBoudingBox.max.x + GROUP_TO_LEFT) * (amount * -1.0)
     },
 
     _setupGUI () {
@@ -250,11 +257,11 @@ export default {
     },
 
     _rangeInputHandler (value) {
-      console.log(value)
+      this._updateSliderPosition(value)
     },
 
     _rangeChangeHandler () {
-      console.log('done')
+      // console.log('done')
     },
 
     _mouseMoveHandler () {
