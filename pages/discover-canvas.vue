@@ -1,5 +1,6 @@
 <template>
   <section class="container">
+    <RangeSlider :value="rangeSlider.value" @inputHandler="_rangeInputHandler" @changeHandler="_rangeChangeHandler" />
     <Canvas ref="canvas" />
   </section>
 </template>
@@ -10,13 +11,19 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 
 import base from '~/mixins/base.js'
 import Canvas from '~/components/webgl/canvas.vue'
+import RangeSlider from '~/components/range-slider.vue'
 import fragmentShader from '~/components/webgl/discover-canvas/fragment.glsl'
 import vertexShader from '~/components/webgl/discover-canvas/vertex.glsl'
 import modulo from '~/helpers/modulo'
 
-// import randomRange from '~/helpers/randomRange'
-// import lerp from '~/helpers/lerp'
+import offscreen from '~/helpers/offscreen'
+
+const THREE = require('three')
+const { gsap } = require('gsap')
+
+const API_URL = `https://www.rijksmuseum.nl/api/en/usersets/222667-monsters?key=${process.env.RIJKS_API_KEY}&format=json&ps=10`
 const CAMERA_POSITION_Z = 6
+const GROUP_TO_LEFT = -1
 
 const GRID_POSITIONING = [
   {
@@ -36,14 +43,10 @@ const GRID_POSITIONING = [
   }
 ]
 
-const THREE = require('three')
-const { gsap } = require('gsap')
-
-const API_URL = `https://www.rijksmuseum.nl/api/en/usersets/222667-monsters?key=${process.env.RIJKS_API_KEY}&format=json&ps=10`
-
 export default {
   components: {
-    Canvas
+    Canvas,
+    RangeSlider
   },
 
   mixins: [base],
@@ -64,14 +67,17 @@ export default {
         amount: 10,
         distance: 0.2
       },
+      rangeSlider: {
+        value: 0.0
+      },
       slide: {
-        speed: 100
+        speed: 100,
+        fullWidth: null
       }
     }
   },
 
   mounted () {
-    console.log(API_URL)
     this.enableStats()
 
     this._setupRenderer()
@@ -94,7 +100,6 @@ export default {
 
   methods: {
     // SETUP
-
     _setupRenderer () {
       this.renderer = new THREE.WebGLRenderer({ canvas: this.$refs.canvas.$el })
       this.renderer.setClearColor(0x0C011B, 1)
@@ -175,28 +180,35 @@ export default {
       for (let i = 0; i < data.setItems.slice(1, 10).length; i++) {
         const position = GRID_POSITIONING[modulo(i, 3)]
 
-        console.log(position.y)
-
         const item = data.setItems[i]
         const plane = this._createPlaneGeometry(item)
-        plane.position.x = i * 1.2
+
+        plane.position.x = (i * 1.2) + GROUP_TO_LEFT
         plane.position.y = position.y
         plane.position.z = position.z
-        // plane.position.z = randomRange(1, 3)
 
         planes.push(plane)
       }
 
       this.group = new THREE.Group()
       for (let i = 0; i < planes.length; i++) this.group.add(planes[i])
-      this.group.position.x = -1
+      // this.group.position.x = GROUP_TO_LEFT
+      this.groupBoudingBox = new THREE.Box3().setFromObject(this.group)
+
+      this.slide.fullWidth = this.groupBoudingBox.max.x + GROUP_TO_LEFT
+
+      console.log(this.slide.fullWidth)
+
       this.scene.add(this.group)
+
+      // setTimeout(() => {
+      //   this.camera.position.z = CAMERA_POSITION_Z
+      // }, 1000)
     },
 
     _renderScene () {
       this.stats.begin()
 
-      // this.uniforms.u_time.value = this.clock.getElapsedTime()
       this._updateValues()
       this.controls.update()
       this.renderer.render(this.scene, this.camera)
@@ -205,11 +217,27 @@ export default {
     },
 
     _updateValues () {
+      if (!this.group) return
+
+      this._controlMouseSlider()
+      this._checkInViewMeshes()
+    },
+
+    _controlMouseSlider () {
+      this.rangeSlider.value = Math.abs(this.group.position.x) / (this.groupBoudingBox.max.x + GROUP_TO_LEFT)
+
+      if (Math.abs(this.group.position.x) > this.groupBoudingBox.max.x + GROUP_TO_LEFT && this.mouse.normalize.x > 0) return
+      if (this.group.position.x > 0 && this.mouse.normalize.x < 0) return
+
       if (this.mouse.normalize.x < -0.3 || this.mouse.normalize.x > 0.3) this.group.position.x = (this.group.position.x - (this.mouse.normalize.x / this.slide.speed))
     },
 
+    _checkInViewMeshes () {
+      for (let i = 0; i < this.group.children.length; i++) offscreen(this.group.children[i], this.camera) ? this.group.children[i].visible = true : this.group.children[i].visible = false
+    },
+
     _updateMousePositions () {
-      console.log(this.mouse.normalize.x)
+
     },
 
     _setupGUI () {
@@ -219,6 +247,14 @@ export default {
     // HANDLERS
     _tickHandler () {
       gsap.ticker.add(this._renderScene)
+    },
+
+    _rangeInputHandler (value) {
+      console.log(value)
+    },
+
+    _rangeChangeHandler () {
+      console.log('done')
     },
 
     _mouseMoveHandler () {

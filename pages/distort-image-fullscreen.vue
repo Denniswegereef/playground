@@ -10,8 +10,8 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 
 import base from '~/mixins/base.js'
 import Canvas from '~/components/webgl/canvas.vue'
-import fragmentShader from '~/components/webgl/base/fragment.glsl'
-import vertexShader from '~/components/webgl/base/vertex.glsl'
+import fragmentShader from '~/components/webgl/distort-image-fullscreen/fragment.glsl'
+import vertexShader from '~/components/webgl/distort-image-fullscreen/vertex.glsl'
 
 const THREE = require('three')
 const { gsap } = require('gsap')
