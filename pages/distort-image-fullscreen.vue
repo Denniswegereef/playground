@@ -42,10 +42,12 @@ export default {
       paused: false,
       orbitControls: true,
       window: { height: 0, width: 0 },
+      targetSpeed: 0,
       uniforms: {
         u_time: { type: 'f', value: 0.0 },
         u_progress: { type: 'f', value: 0.0 },
         u_mouse: { type: 'v2', value: { x: 0.0, y: 0.0 } },
+        u_mouse_speed: { type: 'f', value: 0.0 },
         u_direction: { type: 'f', value: 0.0 },
         u_resolution: { type: 'v4', value: new THREE.Vector4() },
         uvRate1: { type: 'v2', value: new THREE.Vector2(1, 1) },
@@ -199,7 +201,8 @@ export default {
       this.uniforms.u_mouse.value.y = this.mouse.uv.y
 
       this.updateMouseSpeed()
-      // console.log(this.uniforms.u_mouse.value.x)
+      this.targetSpeed += 0.1 * (this.mouseSpeed - this.targetSpeed)
+      this.uniforms.u_mouse_speed.value = this.targetSpeed
     },
 
     /*
@@ -211,6 +214,7 @@ export default {
       this.gui.add(this.uniforms.u_progress, 'value').name('Progress').step(0.1).listen()
       this.gui.add(this.uniforms.u_mouse.value, 'x').name('Mouse uv x').step(0.01).listen()
       this.gui.add(this.uniforms.u_mouse.value, 'y').name('Mouse uv y').step(0.01).listen()
+      this.gui.add(this.uniforms.u_mouse_speed, 'value').name('Mouse speed').step(0.001).listen()
     },
 
     _changeVisibilityStatus () {

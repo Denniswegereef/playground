@@ -55,7 +55,7 @@ export default {
       const movementX = Math.abs(this.mouse.x - this.mousePrevious.x)
       const movementY = Math.abs(this.mouse.y - this.mousePrevious.y)
 
-      this.mouseSpeed = Math.sqrt(movementX * movementX + movementY * movementY)
+      this.mouseSpeed = Math.sqrt(movementX * movementX + movementY * movementY) / 50
 
       this.mousePrevious.x = this.mouse.x
       this.mousePrevious.y = this.mouse.y
