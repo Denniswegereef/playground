@@ -9,11 +9,12 @@ export default {
       mouse: {
         x: 0.0,
         y: 0.0,
-        normalize: {
-          x: 0.0,
-          y: 0.0
-        }
-      }
+        previous: { x: 0.0, y: 0.0 },
+        normalize: { x: 0.0, y: 0.0 },
+        uv: { x: 0.0, y: 0.0 }
+      },
+      mousePrevious: { x: 0, y: 0.0 },
+      mouseSpeed: 0.0
     }
   },
 
@@ -50,6 +51,16 @@ export default {
       return process.env.NODE_ENV !== 'production'
     },
 
+    updateMouseSpeed () {
+      const movementX = Math.abs(this.mouse.x - this.mousePrevious.x)
+      const movementY = Math.abs(this.mouse.y - this.mousePrevious.y)
+
+      this.mouseSpeed = Math.sqrt(movementX * movementX + movementY * movementY)
+
+      this.mousePrevious.x = this.mouse.x
+      this.mousePrevious.y = this.mouse.y
+    },
+
     _updateMouseValuesBase (event) {
       // normalized device cordinates
       const { clientX, clientY } = event
@@ -63,6 +74,10 @@ export default {
         normalize: {
           x: xNormalized,
           y: yNormalized
+        },
+        uv: {
+          x: clientX / window.innerWidth,
+          y: 1 - clientY / window.innerHeight
         },
         ...event
       }

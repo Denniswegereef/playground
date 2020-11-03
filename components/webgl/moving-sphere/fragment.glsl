@@ -26,4 +26,5 @@ void main(){
   float colorMask = circle(uv, 1.2);
 
   gl_FragColor = vec4(mix(u_color_one, u_color_two, smoothstep(0.0, 1.0, uv.y)), 1.0) * colorMask;
+  // gl_FragColor = vec4(vec3(colorMask), 1.0);
 }
