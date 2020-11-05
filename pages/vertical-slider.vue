@@ -1,5 +1,7 @@
 <template>
   <section class="container">
+    <div ref="block" class="block" />
+    <div v-for="(item, index) in 5" :key="index" ref="line" class="line" :class="`line-${index}`"/>
     <Canvas ref="canvas" @canvasResizeHandler="_resizeScreenHandler" />
   </section>
 </template>
@@ -9,8 +11,8 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 
 import base from '~/mixins/base.js'
 import Canvas from '~/components/webgl/canvas.vue'
-import fragmentShader from '~/components/webgl/base/fragment.glsl'
-import vertexShader from '~/components/webgl/base/vertex.glsl'
+import fragmentShader from '~/components/webgl/vertical-slider/fragment.glsl'
+import vertexShader from '~/components/webgl/vertical-slider/vertex.glsl'
 
 const THREE = require('three')
 const { gsap } = require('gsap')
@@ -37,17 +39,24 @@ export default {
       renderer: null,
       gui: null,
       paused: false,
-      orbitControls: true,
+      orbitControls: false,
       window: { height: 0, width: 0 },
       uniforms: {
         u_time: { type: 'f', value: 0.0 },
         u_resolution: { type: 'v4', value: new THREE.Vector4() },
         uvRate1: { type: 'v2', value: new THREE.Vector2(1, 1) }
-      }
+      },
+      speed: 0,
+      position: 0,
+      rounded: 0
     }
   },
 
   mounted () {
+    document.body.style.overflow = 'hidden'
+
+    console.log(this.$refs.line)
+
     this.enableStats()
 
     this._createScene()
@@ -69,13 +78,16 @@ export default {
   },
 
   beforeDestroy () {
+    document.body.style.overflow = ''
     gsap.ticker.remove(this._renderScene)
     document.removeEventListener('visibilitychange', this._changeVisibilityStatus)
+    document.removeEventListener('wheel', this._userScrolling)
   },
 
   methods: {
     _setUpEventListeners () {
       this._tickHandler()
+      this._wheelHandler()
       this._visibilitychangeHandler()
     },
 
@@ -106,7 +118,7 @@ export default {
     },
 
     _setSceneDimensions () {
-      this.window.width / this.window.height > 1 ? this.plane.scale.x = this.camera.aspect : this.plane.scale.y = 1 / this.camera.aspect
+      // this.window.width / this.window.height > 1 ? this.plane.scale.x = this.camera.aspect : this.plane.scale.y = 1 / this.camera.aspect
     },
 
     _imageAspectCover () {
@@ -148,7 +160,7 @@ export default {
     _createScene () {
       this.plane = this._createPlaneGeometry()
 
-      this.scene.add(this.plane)
+      // this.scene.add(this.plane)
     },
 
     _renderScene () {
@@ -166,7 +178,23 @@ export default {
     ** SCENE ANIMATION
     */
 
-    _useFrame () {},
+    _useFrame () {
+      this.position += this.speed
+      this.speed *= 0.8
+
+      this.rounded = Math.round(this.position)
+
+      const diff = (this.rounded - this.position)
+      // console.log(diff)
+
+      this.position += Math.sign(diff) * (Math.abs(diff) ** 0.7) * 0.015
+
+      this.$refs.block.style.transform = `translate(0, ${this.position * 100}px)`
+    },
+
+    _userScrolling (event) {
+      this.speed += event.deltaY * 0.0003
+    },
 
     /*
     ** MISCELLANEOUS
@@ -192,6 +220,10 @@ export default {
       document.addEventListener('visibilitychange', this._changeVisibilityStatus)
     },
 
+    _wheelHandler () {
+      document.addEventListener('wheel', this._userScrolling)
+    },
+
     _resizeScreenHandler () {
       this._setupScreenDimensions()
 
@@ -204,3 +236,37 @@ export default {
   }
 }
 </script>
+
+<style lang="scss" scoped>
+.block {
+  position: absolute;
+  top: rem(100px);
+  left: rem(100px);
+
+  height: rem(100px);
+  width: rem(100px);
+
+  background: red;
+
+  z-index: 3;
+}
+
+.line {
+  position: absolute;
+  left: rem(75px);
+  top: rem(100px);
+
+  height: rem(2px);
+  width: rem(200px);
+
+  background: #fff;
+
+  z-index: 3;
+}
+
+@for $i from 0 through 5 {
+  .line-#{$i} {
+    top: rem(100px) + (rem(100px) * $i);
+  }
+}
+</style>

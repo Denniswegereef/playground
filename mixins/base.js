@@ -23,8 +23,6 @@ export default {
   },
 
   beforeDestroy () {
-    // if (!this.isDevelopment()) return
-
     document.querySelector('#stats').remove()
     this.gui.destroy()
 

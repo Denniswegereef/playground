@@ -6,6 +6,7 @@
 
 <script>
 import debounce from 'lodash.debounce'
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 
 import base from '~/mixins/base.js'
 import Canvas from '~/components/webgl/canvas.vue'
@@ -16,10 +17,11 @@ const THREE = require('three')
 const { gsap } = require('gsap')
 const loadFont = require('load-bmfont')
 const createGeometry = require('~/plugins/three-bmfont-text/index')
+// const MSDFShader = require('~/plugins/three-bmfont-text/shaders/msdf')
 
 const FONT_PATH = {
   FNT: '/fonts/canela/CanelaText-Regular.fnt',
-  PNG: '/fonts/canela/CanelaText-Regular.ttf'
+  PNG: '/fonts/canela/CanelaText-Regular.png'
 }
 
 export default {
@@ -33,6 +35,7 @@ export default {
     return {
       scene: new THREE.Scene(),
       clock: new THREE.Clock(),
+      loader: new THREE.TextureLoader(),
       camera: null,
       renderer: null,
       gui: null,
@@ -41,9 +44,20 @@ export default {
         width: 0
       },
       uniforms: {
-        u_time: { value: 0.0 },
-        u_resolution: { value: { x: 0.0, y: 0.0 } }
-      }
+        u_time: { type: 'f', value: 0.0 },
+        u_opacity: { type: 'f', value: 1.0 },
+        u_color: { type: 'v3', value: { x: 0.0, y: 0.0, z: 0.0 } },
+        u_resolution: { value: { x: 0.0, y: 0.0 } },
+        u_tex: { type: 'sampler2D', value: '' },
+        u_uv_distance: { type: 'f', value: 110.0 },
+        u_speed: { type: 'f', value: 1.5 },
+        u_smoothness: { type: 'f', value: 50.0 },
+        u_frequency1: { type: 'f', value: 1.035 },
+        u_amplitude1: { type: 'f', value: 10.0 },
+        u_frequency2: { type: 'f', value: 0.025 },
+        u_amplitude2: { type: 'f', value: 70.0 }
+      },
+      geometry: {}
     }
   },
 
@@ -74,25 +88,35 @@ export default {
 
     _setupRenderer () {
       this.renderer = new THREE.WebGLRenderer({ canvas: this.$refs.canvas.$el })
-      this.renderer.setClearColor(0x32A8A8, 1)
+      this.renderer.setClearColor(0x000000, 1)
     },
 
     _setupCamera () {
       this.camera = new THREE.PerspectiveCamera(35, this.window.width / this.window.height, 1, 1000)
-      this.camera.position.z = 150
+      this.camera.position.z = 500
+
+      this.controls = new OrbitControls(this.camera, this.$refs.canvas.$el)
+      this.controls.enableDamping = true
     },
 
     _setupFonts () {
-      console.log(createGeometry, loadFont)
-      console.log(FONT_PATH)
+      const self = this
 
       loadFont(FONT_PATH.FNT, (err, font) => {
         if (err) return
-        console.log(font)
-        // const geometry = createGeometry({
-        //   font,
-        //   text: 'BMFONT TEST'
-        // })
+
+        console.log(this)
+
+        self.geometry = createGeometry({
+          font,
+          text: 'Playground',
+          // width: 300,
+          align: 'right'
+        })
+
+        this.loader.load(FONT_PATH.PNG, (texture) => {
+          this._createFontGeometry(self.geometry, texture)
+        })
       })
     },
 
@@ -117,30 +141,30 @@ export default {
 
     // SCENE
 
-    _createIcosahedronGeometry () {
-      const geometry = new THREE.IcosahedronGeometry(20, 4)
+    _createFontGeometry (geometry, texture) {
+      console.log(texture)
+      this.uniforms.u_tex.value = texture
 
-      const shaderMaterial = new THREE.ShaderMaterial({
-        uniforms: this.uniforms,
-        vertexShader,
+      const material = new THREE.ShaderMaterial({
         fragmentShader,
+        vertexShader,
         side: THREE.DoubleSide,
-        wireframe: true
+        uniforms: this.uniforms
       })
 
-      this.icosahedron = new THREE.Mesh(geometry, shaderMaterial)
-
-      this.scene.add(this.icosahedron)
+      this.mesh = new THREE.Mesh(geometry, material)
+      this.mesh.position.set(-80, 0, 0)
+      this.mesh.rotation.set(Math.PI, 0, 0)
+      this.scene.add(this.mesh)
     },
 
-    _createScene () {
-      this._createIcosahedronGeometry()
-    },
+    _createScene () {},
 
     _renderScene () {
       this.stats.begin()
 
       this.uniforms.u_time.value = this.clock.getElapsedTime()
+      this.controls.update()
       this._updateValues()
       this.renderer.render(this.scene, this.camera)
 
@@ -148,15 +172,17 @@ export default {
     },
 
     _updateValues () {
-      if (!this.icosahedron) return
 
-      this.icosahedron.rotation.x += 0.02
-      this.icosahedron.rotation.y += 0.01
     },
 
     _setupGUI () {
-      const folder = this.gui.addFolder('Folder')
-      folder.open()
+      this.gui.add(this.uniforms.u_uv_distance, 'value', 0, 1500).name('UV Distance').step(1.0).listen()
+      this.gui.add(this.uniforms.u_speed, 'value', 0, 5).name('Speed').step(0.01).listen()
+      this.gui.add(this.uniforms.u_smoothness, 'value', 0.1, 100).name('Smoothness').step(0.01).listen()
+      this.gui.add(this.uniforms.u_frequency1, 'value', 0.01, 25).name('Frequency 1').step(0.01).listen()
+      this.gui.add(this.uniforms.u_amplitude1, 'value', 0, 200).name('Amplitude 1').step(0.01).listen()
+      this.gui.add(this.uniforms.u_frequency2, 'value', 0.01, 25).name('Frequency 2').step(0.01).listen()
+      this.gui.add(this.uniforms.u_amplitude2, 'value', 0, 200).name('Amplitude 2').step(0.01).listen()
     },
 
     // HANDLERS
