@@ -1,14 +1,9 @@
-#pragma glslify: cnoise3 = require(glsl-noise/classic/3d)
-
 uniform float u_opacity;
 uniform vec3 u_color;
 uniform sampler2D u_tex;
 varying vec2 vUv;
 
 uniform float u_time;
-uniform float u_uv_distance;
-uniform float u_speed;
-uniform float u_smoothness;
 
 float median(float r, float g, float b) {
   return max(min(r, g), min(max(r, g), b));
@@ -21,10 +16,6 @@ void main() {
   float sigDist = median(tex.r, tex.g, tex.b) - 0.5;
   float alpha = clamp(sigDist/fwidth(sigDist) + 0.5, 0.0, 1.0);
 
-  vec2 pos = vUv * u_uv_distance;
-
-  float n = cnoise3(vec3(pos.x, pos.y, u_time * u_speed)) * u_smoothness;
-
-  gl_FragColor = vec4(vec3(n, n, 0.0), alpha * u_opacity);
+  gl_FragColor = vec4(vec3(1.0), alpha * u_opacity);
   if (gl_FragColor.a < 0.0001) discard;
 }
