@@ -9,24 +9,21 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 
 import base from '~/mixins/base.js'
 import Canvas from '~/components/webgl/canvas.vue'
-import fragmentShader from '~/components/webgl/base/fragment.glsl'
-import vertexShader from '~/components/webgl/base/vertex.glsl'
+import fragmentShader from '~/components/webgl/horizontal-typography/fragment.glsl'
+import vertexShader from '~/components/webgl/horizontal-typography/vertex.glsl'
 
 const THREE = require('three')
 const { gsap } = require('gsap')
 
+const IMAGE = require('~/assets/images/horizontal-text.png')
+
 const IMAGE_ASPECT = 853 / 1280
 const RENDERER_COLOR = 0x0C0C0C
 
-// PERSPECTIVE CAMERA
-const CAMERA_FOV = 70
-const CAMERA_NEAR = 0.0001
+// Ortho
+const CAMERA_NEAR = -1000
 const CAMERA_FAR = 1000
-
-// ORTHOGRAPHIC CAMERA
-// const CAMERA_NEAR = -1000
-// const CAMERA_FAR = 1000
-// const FRUSTUM_SIZE = 1
+const FRUSTUM_SIZE = 1
 
 export default {
   components: {
@@ -39,7 +36,7 @@ export default {
     return {
       scene: new THREE.Scene(),
       clock: new THREE.Clock(),
-      // loader: new THREE.TextureLoader(),
+      loader: new THREE.TextureLoader(),
       camera: null,
       renderer: null,
       gui: null,
@@ -48,6 +45,8 @@ export default {
       window: { height: 0, width: 0 },
       uniforms: {
         u_time: { type: 'f', value: 0.0 },
+        u_progress: { type: 'f', value: 0.0 },
+        u_tex: { type: 'sampler2D', value: '' },
         u_resolution: { type: 'v4', value: new THREE.Vector4() },
         uvRate1: { type: 'v2', value: new THREE.Vector2(1, 1) }
       }
@@ -96,8 +95,8 @@ export default {
     },
 
     _setupCamera () {
-      // this.camera = new THREE.OrthographicCamera(FRUSTUM_SIZE / -2, FRUSTUM_SIZE / 2, FRUSTUM_SIZE / 2, FRUSTUM_SIZE / -2, CAMERA_NEAR, CAMERA_FAR)
-      this.camera = new THREE.PerspectiveCamera(CAMERA_FOV, this.window.width / this.window.height, CAMERA_NEAR, CAMERA_FAR)
+      this.camera = new THREE.OrthographicCamera(FRUSTUM_SIZE / -2, FRUSTUM_SIZE / 2, FRUSTUM_SIZE / 2, FRUSTUM_SIZE / -2, CAMERA_NEAR, CAMERA_FAR)
+      // this.camera = new THREE.PerspectiveCamera(CAMERA_FOV, this.window.width / this.window.height, CAMERA_NEAR, CAMERA_FAR)
       this.camera.position.set(0, 0, 2)
 
       if (!this.orbitControls) return
@@ -114,7 +113,7 @@ export default {
     },
 
     _setSceneDimensions () {
-      this.window.width / this.window.height > 1 ? this.plane.scale.x = this.camera.aspect : this.plane.scale.y = 1 / this.camera.aspect
+      // this.window.width / this.window.height > 1 ? this.plane.scale.x = this.camera.aspect : this.plane.scale.y = 1 / this.camera.aspect
     },
 
     _imageAspectCover () {
@@ -141,11 +140,18 @@ export default {
 
     _createPlaneGeometry () {
       const geometry = new THREE.PlaneGeometry(1, 1, 1, 1)
+      const texture = this.loader.load(IMAGE)
+      texture.magFilter = THREE.NearestFilter
+      texture.minFilter = THREE.NearestFilter
+      this.uniforms.u_tex.value = texture
+
+      // this.uniforms.u_tex.value.magFilter = THREE.NearestFilter
 
       const shaderMaterial = new THREE.ShaderMaterial({
         uniforms: this.uniforms,
         vertexShader,
         fragmentShader,
+        // wireframe: true,
         extensions: { derivatives: '#extension GL_OES_standard_derivatives : enable' },
         side: THREE.DoubleSide
       })
@@ -182,6 +188,7 @@ export default {
 
     _setupGUI () {
       this.gui.add(this.uniforms.u_time, 'value').name('Time').step(0.1).listen()
+      this.gui.add(this.uniforms.u_progress, 'value', 0, 1).name('Progress').listen()
     },
 
     _changeVisibilityStatus () {

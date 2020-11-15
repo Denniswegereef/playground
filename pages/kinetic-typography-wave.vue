@@ -66,7 +66,7 @@ export default {
         },
         object: {
           u_time: { type: 'f', value: 0.0 },
-          u_mouse: { type: 'v2', value: { x: 0.0, y: 0.0 } },
+          u_mouse: { type: 'v2', value: { x: 0.25, y: 0.0 } },
           u_tex: { type: 'sampler2D', value: '' },
           u_resolution: { type: 'v4', value: new THREE.Vector4() }
         }
@@ -230,6 +230,8 @@ export default {
       this.planeMesh = this._createPlaneGeometry()
 
       this.scene.add(this.planeMesh)
+
+      this.uniforms.object.u_mouse.value.x = 0.25
 
       this._setupGUI()
     },
